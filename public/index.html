@@ -4,6 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Mental Health Support</title>
+
+  <!-- ✅ Login Redirect BEFORE Page Loads -->
+  <script>
+    const token = localStorage.getItem("token");
+    if (!token) {
+      window.location.href = "login.html";
+    }
+  </script>
+
   <link rel="stylesheet" href="style.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -23,24 +32,26 @@
 
   <section id="hero" class="hero-banner">
     <div class="hero-content">
-      <h1>Welcome to MindCare</h1>
+      <h1>MindCare</h1>
       <p>Your mental health companion</p>
     </div>
   </section>
 
   <section id="journal" class="container">
     <h2>Journal Your Mood</h2>
-    <select id="mood">
-      <option>Happy</option>
-      <option>Sad</option>
-      <option>Stressed</option>
-      <option>Anxious</option>
-      <option>Neutral</option>
-    </select>
-    <textarea id="journalText" rows="5" placeholder="Write about your day..."></textarea>
-    <button onclick="saveJournal()">Save Entry</button>
+    <form id="journalForm">
+      <select id="moodSelect" required>
+        <option value="">Select mood</option>
+        <option>Happy</option>
+        <option>Sad</option>
+        <option>Stressed</option>
+        <option>Anxious</option>
+        <option>Neutral</option>
+      </select>
+      <textarea id="entryText" rows="5" placeholder="Write about your day..." required></textarea>
+      <button type="submit">Save Entry</button>
+    </form>
     <button onclick="clearAllEntries()">Clear All Entries</button>
-
     <div id="journalEntries"></div>
   </section>
 
@@ -58,11 +69,11 @@
 
   <section id="contact" class="contact-section container">
     <h2>Contact a Therapist</h2>
-    <form id="contactForm" onsubmit="return false;">
+    <form id="contactForm" onsubmit="submitContactForm(); return false;">
       <input type="text" id="name" placeholder="Your Name" required />
       <input type="email" id="email" placeholder="Your Email" required />
       <textarea id="message" rows="4" placeholder="Your Message" required></textarea>
-      <button type="submit" onclick="submitContactForm()">Send Message</button>
+      <button type="submit">Send Message</button>
     </form>
   </section>
 
@@ -70,24 +81,74 @@
     &copy; 2025 MindCare. All rights reserved.
   </footer>
 
-  <script src="script.js"></script>
+  <!-- ✅ Logout Button -->
+  <button onclick="logout()">Logout</button>
+
+  <!-- ✅ JavaScript -->
+  <script>
+    function logout() {
+      localStorage.removeItem("token");
+      window.location.href = "login.html";
+    }
+
+    // Save Journal Entry
+    document.getElementById("journalForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("You must be logged in.");
+        return window.location.href = "login.html";
+      }
+
+      const mood = document.getElementById("moodSelect").value;
+      const entry = document.getElementById("entryText").value;
+
+      try {
+        const res = await fetch("http://localhost:5000/api/journal/add", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify({ mood, entry })
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          alert("Journal saved successfully!");
+          document.getElementById("journalForm").reset();
+        } else {
+          alert(data.message || "Failed to save entry.");
+        }
+      } catch (err) {
+        alert("Error submitting entry.");
+      }
+    });
+
+    // Placeholder for tips
+    function generateTip() {
+      const tips = [
+        "Take deep breaths when you feel overwhelmed.",
+        "Stay connected with loved ones.",
+        "Get some sunlight every day.",
+        "Write down what you’re grateful for.",
+        "Exercise regularly, even if it's a short walk."
+      ];
+      const random = Math.floor(Math.random() * tips.length);
+      document.getElementById("tipDisplay").innerText = tips[random];
+    }
+
+    // Placeholder for clear entries
+    function clearAllEntries() {
+      document.getElementById("journalEntries").innerHTML = "";
+    }
+
+    // Placeholder for contact form
+    function submitContactForm() {
+      alert("Your message has been sent!");
+      document.getElementById("contactForm").reset();
+    }
+  </script>
 </body>
-
-<script>
-  const user = localStorage.getItem("loggedInUser");
-  if (!user) {
-    alert("Please log in first");
-    window.location.href = "login.html";
-  } else {
-    console.log("Logged in as:", user);
-  }
-</script>
-<button onclick="logout()">Logout</button>
-<script>
-  function logout() {
-    localStorage.removeItem("loggedInUser");
-    window.location.href = "login.html";
-  }
-</script>
-
 </html>

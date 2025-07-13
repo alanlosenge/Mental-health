@@ -18,6 +18,32 @@
     <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
   </div>
 
-  <script src="auth.js"></script>
+  <script>
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const username = document.getElementById("loginUsername").value;
+      const password = document.getElementById("loginPassword").value;
+
+      try {
+        const res = await fetch("http://localhost:5000/api/auth/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username, password })
+        });
+
+        const data = await res.json();
+        if (res.ok && data.token) {
+          localStorage.setItem("token", data.token);             // Save JWT
+          localStorage.setItem("username", username);            // Optional: Save username
+          window.location.href = "index.html";                   // Redirect to main app
+        } else {
+          alert(data.message || "Login failed");
+        }
+      } catch (err) {
+        alert("Login error. Please check your network or server.");
+      }
+    });
+  </script>
 </body>
 </html>
