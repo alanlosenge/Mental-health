@@ -53,4 +53,25 @@ router.get('/entries', authMiddleware, async (req, res) => {
   }
 });
 
+// GET: Mood stats for chart/calendar
+router.get('/mood-stats', authMiddleware, async (req, res) => {
+  try {
+    const entries = await JournalEntry.find({ userId: req.userId });
+
+    // Group by date
+    const stats = {};
+    entries.forEach(entry => {
+      const date = new Date(entry.date).toISOString().split('T')[0]; // format: yyyy-mm-dd
+      if (!stats[date]) stats[date] = {};
+      stats[date][entry.mood] = (stats[date][entry.mood] || 0) + 1;
+    });
+
+    res.json(stats);
+  } catch (err) {
+    console.error('Error fetching mood stats:', err);
+    res.status(500).json({ message: 'Failed to fetch mood stats' });
+  }
+});
+
+
 module.exports = router;

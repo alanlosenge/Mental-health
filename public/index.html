@@ -149,6 +149,69 @@
       alert("Your message has been sent!");
       document.getElementById("contactForm").reset();
     }
+    
+  window.addEventListener("DOMContentLoaded", fetchMoodStats);
+
+  async function fetchMoodStats() {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    try {
+      const res = await fetch("http://localhost:5000/api/journal/mood-stats", {
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      });
+
+      const stats = await res.json();
+      renderMoodCalendar(stats);
+      renderMoodChart(stats);
+    } catch (err) {
+      console.error("Error loading mood stats:", err);
+    }
+  }
+
+  function renderMoodCalendar(stats) {
+    const container = document.getElementById("calendarContainer");
+    container.innerHTML = "";
+
+    Object.entries(stats).forEach(([date, moods]) => {
+      const dayDiv = document.createElement("div");
+      dayDiv.className = "calendar-day";
+      dayDiv.innerHTML = `<strong>${date}</strong><br/>` +
+        Object.entries(moods)
+          .map(([mood, count]) => `${mood}: ${count}`)
+          .join("<br/>");
+
+      container.appendChild(dayDiv);
+    });
+  }
+
+  function renderMoodChart(stats) {
+    const moodCounts = {};
+    for (const moodData of Object.values(stats)) {
+      for (const [mood, count] of Object.entries(moodData)) {
+        moodCounts[mood] = (moodCounts[mood] || 0) + count;
+      }
+    }
+
+    const ctx = document.getElementById("moodChart").getContext("2d");
+    new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: Object.keys(moodCounts),
+        datasets: [{
+          label: "Mood Frequency",
+          data: Object.values(moodCounts),
+          backgroundColor: [
+            "#4caf50", "#2196f3", "#ff9800", "#f44336", "#9c27b0"
+          ]
+        }]
+      }
+    });
+  }
+
+
   </script>
 </body>
 </html>
