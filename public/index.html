@@ -62,10 +62,11 @@
   </section>
 
   <section id="calendar" class="container">
-    <h2>Mood Calendar</h2>
-    <div id="calendarContainer"></div>
-    <canvas id="moodChart" style="max-width: 100%; margin-top: 20px;"></canvas>
-  </section>
+  <h2>Mood Calendar</h2>
+  <div id="calendarContainer" class="calendar-month"></div>
+  <canvas id="moodChart" style="max-width: 100%; margin-top: 20px;"></canvas>
+</section>
+
 
   <section id="contact" class="contact-section container">
     <h2>Contact a Therapist</h2>
@@ -172,20 +173,60 @@
   }
 
   function renderMoodCalendar(stats) {
-    const container = document.getElementById("calendarContainer");
-    container.innerHTML = "";
+  const container = document.getElementById("calendarContainer");
+  container.innerHTML = "";
 
-    Object.entries(stats).forEach(([date, moods]) => {
-      const dayDiv = document.createElement("div");
-      dayDiv.className = "calendar-day";
-      dayDiv.innerHTML = `<strong>${date}</strong><br/>` +
-        Object.entries(moods)
-          .map(([mood, count]) => `${mood}: ${count}`)
-          .join("<br/>");
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth(); // 0-indexed
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDayOfWeek = firstDay.getDay(); // 0 = Sun
+  const totalDays = lastDay.getDate();
 
-      container.appendChild(dayDiv);
-    });
+  // Weekday headers (optional)
+  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  weekdays.forEach(day => {
+    const dayHeader = document.createElement("div");
+    dayHeader.className = "calendar-day calendar-header";
+    dayHeader.innerText = day;
+    container.appendChild(dayHeader);
+  });
+
+  // Empty cells before the 1st day
+  for (let i = 0; i < startDayOfWeek; i++) {
+    const emptyDiv = document.createElement("div");
+    emptyDiv.className = "calendar-day empty";
+    container.appendChild(emptyDiv);
   }
+
+  // Populate each day of the month
+  for (let date = 1; date <= totalDays; date++) {
+    const fullDate = new Date(year, month, date);
+    const isoDate = fullDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
+
+    const dayDiv = document.createElement("div");
+    dayDiv.className = "calendar-day";
+
+    const dateLabel = document.createElement("div");
+    dateLabel.className = "date-label";
+    dateLabel.innerText = date;
+    dayDiv.appendChild(dateLabel);
+
+    if (stats[isoDate]) {
+      // Display moods
+      Object.entries(stats[isoDate]).forEach(([mood, count]) => {
+        const moodSpan = document.createElement("span");
+        moodSpan.className = `mood-${mood}`;
+        moodSpan.innerText = `${mood} (${count})`;
+        dayDiv.appendChild(moodSpan);
+      });
+    }
+
+    container.appendChild(dayDiv);
+  }
+}
+
 
   function renderMoodChart(stats) {
     const moodCounts = {};
