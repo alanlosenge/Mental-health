@@ -38,7 +38,7 @@ async function saveJournal() {
   }
 
   try {
-    const res = await fetch("http://localhost:5000/api/journal/add", {
+    const res = await fetch("https://mental-health-gekz.onrender.com/api/journal/add", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -67,13 +67,13 @@ async function loadEntries() {
   if (!token) return;
 
   try {
-    const res = await fetch("http://localhost:5000/api/journal/entries", {
+    const res = await fetch("https://mental-health-gekz.onrender.com/api/journal/entries", {
       headers: {
         "Authorization": `Bearer ${token}`
       }
     });
-    const data = await res.json();
 
+    const data = await res.json();
     const container = document.getElementById("journalEntries");
     container.innerHTML = "";
 

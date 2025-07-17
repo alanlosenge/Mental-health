@@ -26,7 +26,7 @@
       const password = document.getElementById("loginPassword").value;
 
       try {
-        const res = await fetch("http://localhost:5000/api/auth/login", {
+        const res = await fetch("https://mental-health-gekz.onrender.com/api/auth/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username, password })
@@ -34,9 +34,9 @@
 
         const data = await res.json();
         if (res.ok && data.token) {
-          localStorage.setItem("token", data.token);             // Save JWT
-          localStorage.setItem("username", username);            // Optional: Save username
-          window.location.href = "index.html";                   // Redirect to main app
+          localStorage.setItem("token", data.token);     // Save JWT
+          localStorage.setItem("username", username);    // Optional: Save username
+          window.location.href = "index.html";           // Redirect to home page
         } else {
           alert(data.message || "Login failed");
         }

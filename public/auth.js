@@ -1,4 +1,6 @@
-// Sign up
+const BASE_URL = "https://mental-health-gekz.onrender.com";
+
+// Sign up (localStorage simulation – optional if using backend only)
 const signupForm = document.getElementById("signupForm");
 if (signupForm) {
   signupForm.addEventListener("submit", function (e) {
@@ -11,7 +13,7 @@ if (signupForm) {
   });
 }
 
-// Log in
+// Log in (localStorage simulation – optional if using backend only)
 const loginForm = document.getElementById("loginForm");
 if (loginForm) {
   loginForm.addEventListener("submit", function (e) {
@@ -30,14 +32,14 @@ if (loginForm) {
   });
 }
 
-// Signup
+// Signup using backend API
 document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const username = document.getElementById("signupUsername").value;
   const password = document.getElementById("signupPassword").value;
 
-  const response = await fetch("http://localhost:5000/api/signup", {
+  const response = await fetch(`${BASE_URL}/api/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password })
@@ -48,18 +50,18 @@ document.getElementById("signupForm")?.addEventListener("submit", async (e) => {
     alert("Signup successful!");
     window.location.href = "login.html";
   } else {
-    alert(data.message);
+    alert(data.message || "Signup failed. Try again.");
   }
 });
 
-// Login
+// Login using backend API
 document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const username = document.getElementById("loginUsername").value;
   const password = document.getElementById("loginPassword").value;
 
-  const response = await fetch("http://localhost:5000/api/login", {
+  const response = await fetch(`${BASE_URL}/api/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password })
@@ -71,6 +73,6 @@ document.getElementById("loginForm")?.addEventListener("submit", async (e) => {
     alert("Login successful!");
     window.location.href = "index.html";
   } else {
-    alert(data.message);
+    alert(data.message || "Login failed. Check credentials.");
   }
 });

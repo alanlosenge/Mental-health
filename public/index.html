@@ -62,11 +62,10 @@
   </section>
 
   <section id="calendar" class="container">
-  <h2>Mood Calendar</h2>
-  <div id="calendarContainer" class="calendar-month"></div>
-  <canvas id="moodChart" style="max-width: 100%; margin-top: 20px;"></canvas>
-</section>
-
+    <h2>Mood Calendar</h2>
+    <div id="calendarContainer" class="calendar-month"></div>
+    <canvas id="moodChart" style="max-width: 100%; margin-top: 20px;"></canvas>
+  </section>
 
   <section id="contact" class="contact-section container">
     <h2>Contact a Therapist</h2>
@@ -106,7 +105,7 @@
       const entry = document.getElementById("entryText").value;
 
       try {
-        const res = await fetch("http://localhost:5000/api/journal/add", {
+        const res = await fetch("https://mental-health-gekz.onrender.com/api/journal/add", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -140,119 +139,110 @@
       document.getElementById("tipDisplay").innerText = tips[random];
     }
 
-    // Placeholder for clear entries
     function clearAllEntries() {
       document.getElementById("journalEntries").innerHTML = "";
     }
 
-    // Placeholder for contact form
     function submitContactForm() {
       alert("Your message has been sent!");
       document.getElementById("contactForm").reset();
     }
-    
-  window.addEventListener("DOMContentLoaded", fetchMoodStats);
 
-  async function fetchMoodStats() {
-    const token = localStorage.getItem("token");
-    if (!token) return;
+    window.addEventListener("DOMContentLoaded", fetchMoodStats);
 
-    try {
-      const res = await fetch("http://localhost:5000/api/journal/mood-stats", {
-        headers: {
-          "Authorization": `Bearer ${token}`
+    async function fetchMoodStats() {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const res = await fetch("https://mental-health-gekz.onrender.com/api/journal/mood-stats", {
+          headers: {
+            "Authorization": `Bearer ${token}`
+          }
+        });
+
+        const stats = await res.json();
+        renderMoodCalendar(stats);
+        renderMoodChart(stats);
+      } catch (err) {
+        console.error("Error loading mood stats:", err);
+      }
+    }
+
+    function renderMoodCalendar(stats) {
+      const container = document.getElementById("calendarContainer");
+      container.innerHTML = "";
+
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
+      const firstDay = new Date(year, month, 1);
+      const lastDay = new Date(year, month + 1, 0);
+      const startDayOfWeek = firstDay.getDay();
+      const totalDays = lastDay.getDate();
+
+      const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      weekdays.forEach(day => {
+        const dayHeader = document.createElement("div");
+        dayHeader.className = "calendar-day calendar-header";
+        dayHeader.innerText = day;
+        container.appendChild(dayHeader);
+      });
+
+      for (let i = 0; i < startDayOfWeek; i++) {
+        const emptyDiv = document.createElement("div");
+        emptyDiv.className = "calendar-day empty";
+        container.appendChild(emptyDiv);
+      }
+
+      for (let date = 1; date <= totalDays; date++) {
+        const fullDate = new Date(year, month, date);
+        const isoDate = fullDate.toISOString().split("T")[0];
+
+        const dayDiv = document.createElement("div");
+        dayDiv.className = "calendar-day";
+
+        const dateLabel = document.createElement("div");
+        dateLabel.className = "date-label";
+        dateLabel.innerText = date;
+        dayDiv.appendChild(dateLabel);
+
+        if (stats[isoDate]) {
+          Object.entries(stats[isoDate]).forEach(([mood, count]) => {
+            const moodSpan = document.createElement("span");
+            moodSpan.className = `mood-${mood}`;
+            moodSpan.innerText = `${mood} (${count})`;
+            dayDiv.appendChild(moodSpan);
+          });
+        }
+
+        container.appendChild(dayDiv);
+      }
+    }
+
+    function renderMoodChart(stats) {
+      const moodCounts = {};
+      for (const moodData of Object.values(stats)) {
+        for (const [mood, count] of Object.entries(moodData)) {
+          moodCounts[mood] = (moodCounts[mood] || 0) + count;
+        }
+      }
+
+      const ctx = document.getElementById("moodChart").getContext("2d");
+      new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: Object.keys(moodCounts),
+          datasets: [{
+            label: "Mood Frequency",
+            data: Object.values(moodCounts),
+            backgroundColor: [
+              "#4caf50", "#2196f3", "#ff9800", "#f44336", "#9c27b0"
+            ]
+          }]
         }
       });
-
-      const stats = await res.json();
-      renderMoodCalendar(stats);
-      renderMoodChart(stats);
-    } catch (err) {
-      console.error("Error loading mood stats:", err);
     }
-  }
-
-  function renderMoodCalendar(stats) {
-  const container = document.getElementById("calendarContainer");
-  container.innerHTML = "";
-
-  const today = new Date();
-  const year = today.getFullYear();
-  const month = today.getMonth(); // 0-indexed
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const startDayOfWeek = firstDay.getDay(); // 0 = Sun
-  const totalDays = lastDay.getDate();
-
-  // Weekday headers (optional)
-  const weekdays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  weekdays.forEach(day => {
-    const dayHeader = document.createElement("div");
-    dayHeader.className = "calendar-day calendar-header";
-    dayHeader.innerText = day;
-    container.appendChild(dayHeader);
-  });
-
-  // Empty cells before the 1st day
-  for (let i = 0; i < startDayOfWeek; i++) {
-    const emptyDiv = document.createElement("div");
-    emptyDiv.className = "calendar-day empty";
-    container.appendChild(emptyDiv);
-  }
-
-  // Populate each day of the month
-  for (let date = 1; date <= totalDays; date++) {
-    const fullDate = new Date(year, month, date);
-    const isoDate = fullDate.toISOString().split("T")[0]; // Format: YYYY-MM-DD
-
-    const dayDiv = document.createElement("div");
-    dayDiv.className = "calendar-day";
-
-    const dateLabel = document.createElement("div");
-    dateLabel.className = "date-label";
-    dateLabel.innerText = date;
-    dayDiv.appendChild(dateLabel);
-
-    if (stats[isoDate]) {
-      // Display moods
-      Object.entries(stats[isoDate]).forEach(([mood, count]) => {
-        const moodSpan = document.createElement("span");
-        moodSpan.className = `mood-${mood}`;
-        moodSpan.innerText = `${mood} (${count})`;
-        dayDiv.appendChild(moodSpan);
-      });
-    }
-
-    container.appendChild(dayDiv);
-  }
-}
-
-
-  function renderMoodChart(stats) {
-    const moodCounts = {};
-    for (const moodData of Object.values(stats)) {
-      for (const [mood, count] of Object.entries(moodData)) {
-        moodCounts[mood] = (moodCounts[mood] || 0) + count;
-      }
-    }
-
-    const ctx = document.getElementById("moodChart").getContext("2d");
-    new Chart(ctx, {
-      type: "bar",
-      data: {
-        labels: Object.keys(moodCounts),
-        datasets: [{
-          label: "Mood Frequency",
-          data: Object.values(moodCounts),
-          backgroundColor: [
-            "#4caf50", "#2196f3", "#ff9800", "#f44336", "#9c27b0"
-          ]
-        }]
-      }
-    });
-  }
-
-
   </script>
 </body>
 </html>
