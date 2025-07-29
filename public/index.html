@@ -25,6 +25,7 @@
     <li><a href="#journal" class="nav-link">Journal</a></li>
     <li><a href="#calendar" class="nav-link">Calendar</a></li>
     <li><a href="#trends" class="nav-link">Trends</a></li>
+    <li><a href="#chatroom" class="nav-link">Chatroom</a></li>
     <li><a href="#contact" class="nav-link">Contact</a></li>
   </ul>
   <button class="logout-btn" onclick="logout()">Logout</button>
@@ -52,7 +53,7 @@
       </select>
       <textarea id="entryText" rows="5" placeholder="Write about your day..." required></textarea>
       <button type="submit">Save Entry</button>
-    </form>
+    </form><br>
     <button onclick="clearAllEntries()">Clear All Entries</button>
     <div id="journalEntries"></div>
   </section>
@@ -63,10 +64,64 @@
     <p id="tipDisplay"></p>
   </section>
 
-  <section id="calendar" class="container">
+  <section id="Calendar" class="container">
     <h2>Mood Calendar</h2>
     <div id="calendarContainer" class="calendar-month"></div>
     <canvas id="moodChart" style="max-width: 100%; margin-top: 20px;"></canvas>
+  </section>
+
+  <!-- ✅ Chatroom Section -->
+   <section id="chatroom">
+   <div class="chatroom-container">
+  <!-- Left Sidebar: Room List -->
+  <div class="chat-sidebar">
+    <h3>Rooms</h3>
+    <div class="chatroom-list">
+      <div class="chatroom-item room active" data-room="General">General</div>
+      <div class="chatroom-item room" data-room="Support">Support</div>
+      <div class="chatroom-item room" data-room="Stress Relief">Stress Relief</div>
+    </div>
+  </div>
+
+  <!-- Center: Chat Area -->
+  <div class="chat-area">
+    <h3 id="currentRoom"># General</h3>
+
+    <div id="messages" class="messages" style="flex: 1; overflow-y: auto; margin-bottom: 15px;"></div>
+
+    <!-- Typing Indicator -->
+    <div id="typingIndicator" style="display: none; font-style: italic; font-size: 13px; margin-bottom: 10px; color: #7b5d45;">
+      Someone is typing...
+    </div>
+
+    <!-- Message Input and Emoji Picker -->
+    <div class="chat-input">
+      <button id="emojiBtn" title="Pick Emoji">😊</button>
+      <input id="messageInput" type="text" placeholder="Type a message..." autocomplete="off" />
+      <button id="sendBtn">Send</button>
+    </div>
+
+    <!-- Emoji Picker -->
+    <div id="emojiPicker" class="emoji-picker" style="display: none;"></div>
+  </div>
+
+  <!-- Right Sidebar: Info Panel -->
+  <div class="chat-info">
+    <h3>Room Info</h3>
+    <p>Welcome to our anonymous chat space. Feel free to express yourself openly and respectfully.</p>
+    <ul>
+      <li>No personal info</li>
+      <li>Stay supportive</li>
+      <li>Respect everyone's space</li>
+    </ul>
+
+    <!-- Light/Dark Toggle -->
+    <hr />
+    <button id="toggleMode" style="margin-top: 10px; padding: 8px 12px; border: none; border-radius: 8px; background-color: #8b4513; color: white;">
+      Toggle Light/Dark
+    </button>
+  </div>
+</div>
   </section>
 
   <section id="contact" class="contact-section container">
@@ -83,8 +138,10 @@
     &copy; 2025 MindCare. All rights reserved.
   </footer>
 
-  <!-- ✅ Logout Button -->
-  <button onclick="logout()">Logout</button>
+<script src="chatroom.js"></script>
+
+
+  
 
   <!-- ✅ JavaScript -->
   <script>
@@ -131,11 +188,12 @@
     // Placeholder for tips
     function generateTip() {
       const tips = [
-        "Take deep breaths when you feel overwhelmed.",
-        "Stay connected with loved ones.",
-        "Get some sunlight every day.",
-        "Write down what you’re grateful for.",
-        "Exercise regularly, even if it's a short walk."
+        "Dont bottle things up - suppressed fellings grow heavier.",
+        "Move your body - exercise is a natural mood booster.",
+        "Nothing is permanent, including your feelings.",
+        "Nothing changes if nothing changes.",
+        "progress, not perfection- focus on growth not flawlessness.",
+        "Ask for help - its a sign of strength, not weakness.",
       ];
       const random = Math.floor(Math.random() * tips.length);
       document.getElementById("tipDisplay").innerText = tips[random];
